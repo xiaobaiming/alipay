@@ -51,57 +51,110 @@ func (this *AliPay) NotifyVerify(notifyId string) bool {
 	}
 	return false
 }
-
-func (this *AliPay) GetTradeNotification(req *http.Request) (*TradeNotification, error) {
+func (this *AliPay) GetTradeNotification(req map[string]string) (*TradeNotification, error) {
 	return GetTradeNotification(req, this.AliPayPublicKey)
 }
-
-func GetTradeNotification(req *http.Request, aliPayPublicKey []byte) (noti *TradeNotification, err error) {
+func GetTradeNotification(req map[string]string, aliPayPublicKey []byte) (noti *TradeNotification, err error) {
 	if req == nil {
 		return nil, errors.New("request 参数不能为空")
 	}
-
 	noti = &TradeNotification{}
-	noti.AppId = req.FormValue("app_id")
-	noti.AuthAppId = req.FormValue("auth_app_id")
-	noti.NotifyId = req.FormValue("notify_id")
-	noti.NotifyType = req.FormValue("notify_type")
-	noti.NotifyTime = req.FormValue("notify_time")
-	noti.TradeNo = req.FormValue("trade_no")
-	noti.TradeStatus = req.FormValue("trade_status")
-	noti.TotalAmount = req.FormValue("total_amount")
-	noti.ReceiptAmount = req.FormValue("receipt_amount")
-	noti.InvoiceAmount = req.FormValue("invoice_amount")
-	noti.BuyerPayAmount = req.FormValue("buyer_pay_amount")
-	noti.SellerId = req.FormValue("seller_id")
-	noti.SellerEmail = req.FormValue("seller_email")
-	noti.BuyerId = req.FormValue("buyer_id")
-	noti.BuyerLogonId = req.FormValue("buyer_logon_id")
-	noti.FundBillList = req.FormValue("fund_bill_list")
-	noti.Charset = req.FormValue("charset")
-	noti.PointAmount = req.FormValue("point_amount")
-	noti.OutTradeNo = req.FormValue("out_trade_no")
-	noti.OutBizNo = req.FormValue("out_biz_no")
-	noti.GmtCreate = req.FormValue("gmt_create")
-	noti.GmtPayment = req.FormValue("gmt_payment")
-	noti.GmtRefund = req.FormValue("gmt_refund")
-	noti.GmtClose = req.FormValue("gmt_close")
-	noti.Subject = req.FormValue("subject")
-	noti.Body = req.FormValue("body")
-	noti.RefundFee = req.FormValue("refund_fee")
-	noti.Version = req.FormValue("version")
-	noti.SignType = req.FormValue("sign_type")
-	noti.Sign = req.FormValue("sign")
-	noti.PassbackParams = req.FormValue("passback_params")
-	noti.VoucherDetailList = req.FormValue("voucher_detail_list")
+	noti.AppId = req["app_id"]
+	noti.AuthAppId = req["auth_app_id"]
+	noti.NotifyId = req["notify_id"]
+	noti.NotifyType = req["notify_type"]
+	noti.NotifyTime = req["notify_time"]
+	noti.TradeNo = req["trade_no"]
+	noti.TradeStatus = req["trade_status"]
+	noti.TotalAmount = req["total_amount"]
+	noti.ReceiptAmount = req["receipt_amount"]
+	noti.InvoiceAmount = req["invoice_amount"]
+	noti.BuyerPayAmount = req["buyer_pay_amount"]
+	noti.SellerId = req["seller_id"]
+	noti.SellerEmail = req["seller_email"]
+	noti.BuyerId = req["buyer_id"]
+	noti.BuyerLogonId = req["buyer_logon_id"]
+	noti.FundBillList = req["fund_bill_list"]
+	noti.Charset = req["charset"]
+	noti.PointAmount = req["point_amount"]
+	noti.OutTradeNo = req["out_trade_no"]
+	noti.OutBizNo = req["out_biz_no"]
+	noti.GmtCreate = req["gmt_create"]
+	noti.GmtPayment = req["gmt_payment"]
+	noti.GmtRefund = req["gmt_refund"]
+	noti.GmtClose = req["gmt_close"]
+	noti.Subject = req["subject"]
+	noti.Body = req["body"]
+	noti.RefundFee = req["refund_fee"]
+	noti.Version = req["version"]
+	noti.SignType = req["sign_type"]
+	noti.Sign = req["sign"]
+	noti.PassbackParams = req["passback_params"]
+	noti.VoucherDetailList = req["voucher_detail_list"]
+
 
 	if len(noti.NotifyId) == 0 {
 		return nil, errors.New("不是有效的 Notify")
 	}
 
-	ok, err := verifySign(req.Form, aliPayPublicKey)
+	ok, err := verifySign(req, aliPayPublicKey)
 	if ok == false {
 		return nil, err
 	}
 	return noti, err
 }
+
+
+//func (this *AliPay) GetTradeNotification(req *http.Request) (*TradeNotification, error) {
+//	return GetTradeNotification(req, this.AliPayPublicKey)
+//}
+
+//func GetTradeNotification(req *http.Request, aliPayPublicKey []byte) (noti *TradeNotification, err error) {
+//	if req == nil {
+//		return nil, errors.New("request 参数不能为空")
+//	}
+//
+//	noti = &TradeNotification{}
+//	noti.AppId = req.FormValue("app_id")
+//	noti.AuthAppId = req.FormValue("auth_app_id")
+//	noti.NotifyId = req.FormValue("notify_id")
+//	noti.NotifyType = req.FormValue("notify_type")
+//	noti.NotifyTime = req.FormValue("notify_time")
+//	noti.TradeNo = req.FormValue("trade_no")
+//	noti.TradeStatus = req.FormValue("trade_status")
+//	noti.TotalAmount = req.FormValue("total_amount")
+//	noti.ReceiptAmount = req.FormValue("receipt_amount")
+//	noti.InvoiceAmount = req.FormValue("invoice_amount")
+//	noti.BuyerPayAmount = req.FormValue("buyer_pay_amount")
+//	noti.SellerId = req.FormValue("seller_id")
+//	noti.SellerEmail = req.FormValue("seller_email")
+//	noti.BuyerId = req.FormValue("buyer_id")
+//	noti.BuyerLogonId = req.FormValue("buyer_logon_id")
+//	noti.FundBillList = req.FormValue("fund_bill_list")
+//	noti.Charset = req.FormValue("charset")
+//	noti.PointAmount = req.FormValue("point_amount")
+//	noti.OutTradeNo = req.FormValue("out_trade_no")
+//	noti.OutBizNo = req.FormValue("out_biz_no")
+//	noti.GmtCreate = req.FormValue("gmt_create")
+//	noti.GmtPayment = req.FormValue("gmt_payment")
+//	noti.GmtRefund = req.FormValue("gmt_refund")
+//	noti.GmtClose = req.FormValue("gmt_close")
+//	noti.Subject = req.FormValue("subject")
+//	noti.Body = req.FormValue("body")
+//	noti.RefundFee = req.FormValue("refund_fee")
+//	noti.Version = req.FormValue("version")
+//	noti.SignType = req.FormValue("sign_type")
+//	noti.Sign = req.FormValue("sign")
+//	noti.PassbackParams = req.FormValue("passback_params")
+//	noti.VoucherDetailList = req.FormValue("voucher_detail_list")
+//
+//	if len(noti.NotifyId) == 0 {
+//		return nil, errors.New("不是有效的 Notify")
+//	}
+//
+//	ok, err := verifySign(req.Form, aliPayPublicKey)
+//	if ok == false {
+//		return nil, err
+//	}
+//	return noti, err
+//}

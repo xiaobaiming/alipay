@@ -126,10 +126,10 @@ fmt.Println(payURL)
 
 支持自动对支付宝返回的数据进行签名验证，详细信息请参考[自行实现验签](https://doc.open.alipay.com/docs/doc.htm?docType=1&articleId=106120).
 
-如果需要开启自动验签，只需要在初始化 AliPay 对象的时候提供 **aliPublicKey** 参数，该参数的值为支付宝管理后台获取到的支付宝公钥，如下：
+如果需要开启自动验签，只需要在初始化 AliPay 对象的时候提供 **aliPublickKey** 参数，该参数的值为支付宝管理后台获取到的支付宝公钥，如下：
 
 ``` Golang
-var client = alipay.New(appId, partnerId, aliPublicKey, privateKey, false)
+var client = alipay.New(appId, partnerId, aliPublickKey, privateKey, false)
 ```
 
 #### Return URL
@@ -145,7 +145,7 @@ p.ReturnURL = "http://xxx/return"
 
 
 ```Golang
-var client = alipay.New(appId, partnerId, aliPublicKey, privateKey, false)
+var client = alipay.New(appId, partnerId, aliPublickKey, privateKey, false)
 
 http.HandleFunc("/return", func(rep http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
@@ -162,7 +162,7 @@ http.HandleFunc("/return", func(rep http.ResponseWriter, req *http.Request) {
 
 ```Golang
 
-var client = alipay.New(appId, partnerId, aliPublicKey, privateKey, false)
+var client = alipay.New(appId, partnerId, aliPublickKey, privateKey, false)
  
 http.HandleFunc("/alipay", func(rep http.ResponseWriter, req *http.Request) {
 	var noti, _ = client.GetTradeNotification(req)
@@ -184,7 +184,7 @@ http.HandleFunc("/alipay", func(rep http.ResponseWriter, req *http.Request) {
 
 ```Golang
 
-var client = alipay.New(appId, partnerId, aliPublicKey, privateKey, false)
+var client = alipay.New(appId, partnerId, aliPublickKey, privateKey, false)
  
 http.HandleFunc("/alipay", func(rep http.ResponseWriter, req *http.Request) {
 	var noti, _ = client.GetTradeNotification(req)

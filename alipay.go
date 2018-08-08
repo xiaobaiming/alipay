@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-
 	"github.com/smartwalle/alipay/encoding"
 )
 
@@ -62,17 +61,17 @@ func (this *AliPay) URLValues(param AliPayParam) (value url.Values, err error) {
 		}
 	}
 
-	var hash crypto.Hash
+	var sign string
 	if this.SignType == K_SIGN_TYPE_RSA {
-		hash = crypto.SHA1
+		sign, err = signRSA(p, this.privateKey)
 	} else {
-		hash = crypto.SHA256
+		sign, err = signRSA2(p, this.privateKey)
 	}
-	sign, err := signWithPKCS1v15(p, this.privateKey, hash)
+	p.Add("sign", sign)
+
 	if err != nil {
 		return nil, err
 	}
-	p.Add("sign", sign)
 	return p, nil
 }
 
@@ -141,7 +140,7 @@ func (this *AliPay) DoRequest(method string, param AliPayParam, results interfac
 	return this.doRequest(method, param, results)
 }
 
-func (this *AliPay) VerifySign(data url.Values) (ok bool, err error) {
+func (this *AliPay) VerifySign(data map[string]string) (ok bool, err error) {
 	return verifySign(data, this.AliPayPublicKey)
 }
 
@@ -164,7 +163,7 @@ func parserJSONSource(rawData string, nodeName string, nodeIndex int) (content s
 	return content, sign
 }
 
-func signWithPKCS1v15(param url.Values, privateKey []byte, hash crypto.Hash) (s string, err error) {
+func signRSA2(param url.Values, privateKey []byte) (s string, err error) {
 	if param == nil {
 		param = make(url.Values, 0)
 	}
@@ -178,7 +177,7 @@ func signWithPKCS1v15(param url.Values, privateKey []byte, hash crypto.Hash) (s 
 	}
 	sort.Strings(pList)
 	var src = strings.Join(pList, "&")
-	sig, err := encoding.SignPKCS1v15([]byte(src), privateKey, hash)
+	sig, err := encoding.SignPKCS1v15([]byte(src), privateKey, crypto.SHA256)
 	if err != nil {
 		return "", err
 	}
@@ -186,13 +185,63 @@ func signWithPKCS1v15(param url.Values, privateKey []byte, hash crypto.Hash) (s 
 	return s, nil
 }
 
-func VerifySign(data url.Values, key []byte) (ok bool, err error) {
+func signRSA(param url.Values, privateKey []byte) (s string, err error) {
+	if param == nil {
+		param = make(url.Values, 0)
+	}
+
+	var pList = make([]string, 0, 0)
+	for key := range param {
+		var value = strings.TrimSpace(param.Get(key))
+		if len(value) > 0 {
+			pList = append(pList, key+"="+value)
+		}
+	}
+	sort.Strings(pList)
+	var src = strings.Join(pList, "&")
+	sig, err := encoding.SignPKCS1v15([]byte(src), privateKey, crypto.SHA1)
+	if err != nil {
+		return "", err
+	}
+	s = base64.StdEncoding.EncodeToString(sig)
+	return s, nil
+}
+
+func VerifySign(data map[string]string, key []byte) (ok bool, err error) {
 	return verifySign(data, key)
 }
 
-func verifySign(data url.Values, key []byte) (ok bool, err error) {
-	sign := data.Get("sign")
-	signType := data.Get("sign_type")
+
+//func verifySign(data url.Values, key []byte) (ok bool, err error) {
+//	sign := data.Get("sign")
+//	signType := data.Get("sign_type")
+//
+//	var keys = make([]string, 0, 0)
+//	for key, value := range data {
+//		if key == "sign" || key == "sign_type" {
+//			continue
+//		}
+//		if len(value) > 0 {
+//			keys = append(keys, key)
+//		}
+//	}
+//
+//	sort.Strings(keys)
+//
+//	var pList = make([]string, 0, 0)
+//	for _, key := range keys {
+//		var value = strings.TrimSpace(data.Get(key))
+//		if len(value) > 0 {
+//			pList = append(pList, key+"="+value)
+//		}
+//	}
+//	var s = strings.Join(pList, "&")
+//
+//	return verifyData([]byte(s), signType, sign, key)
+//}
+func verifySign(data map[string]string, key []byte) (ok bool, err error) {
+	sign := data["sign"]
+	signType := data["sign_type"]
 
 	var keys = make([]string, 0, 0)
 	for key, value := range data {
@@ -208,7 +257,7 @@ func verifySign(data url.Values, key []byte) (ok bool, err error) {
 
 	var pList = make([]string, 0, 0)
 	for _, key := range keys {
-		var value = strings.TrimSpace(data.Get(key))
+		var value = strings.TrimSpace(data[key])
 		if len(value) > 0 {
 			pList = append(pList, key+"="+value)
 		}
